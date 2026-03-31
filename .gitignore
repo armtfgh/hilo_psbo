@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.venv/
+venv/
+env/
+.env
+.idea/
+.vscode/
+
+# Streamlit / GUI outputs
+hilo_runs/
+
+# Benchmark outputs
+llm_study_data/
+awcd_sweep*/
+baseline_cache*.csv
+safety_ensemble_history*.csv
+readout_map_*.png
+readout_map_p3ht_*.png
+influence_chart_*.png
+influence_chart_*.csv
+awcd_active_ratio_*.png
+awcd_active_ratio_p3ht_*.png
+fig6_panel_*.csv
+fig6_p3ht_*.csv
