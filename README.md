@@ -2,6 +2,8 @@
 
 This repository studies Bayesian optimization with structured prior knowledge. The main idea is to compare standard BO against a prior-shaped variant that injects expert knowledge or data-derived readouts into the surrogate model, while using a safety mechanism to disable misleading priors when needed.
 
+![Project scheme](scheme.png)
+
 The two main benchmark files are:
 
 - `main_benchmark_portion_new_safety.py`: UGI reaction benchmark on a continuous domain.
