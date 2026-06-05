@@ -1,6 +1,8 @@
 **HILO: Human-In-the-Loop Language-Guided Optimization**  
 HILO converts plain-language expert knowledge into structured Bayesian optimization priors, then uses adaptive wrongness credibility detection (AWCD) to reduce or disable prior influence when observations conflict with that knowledge.  
 This public folder contains the core runnable code and the web interface. It intentionally excludes manuscript drafts, revision figures, benchmark result CSVs, caches, and other analysis artifacts.  
+
+![HILO GUI screenshot](graphical_abstract1.png)
 **Contents**  
 - readout_schema.py, prior_gp.py: core prior schema and GP-with-prior-mean utilities for continuous UGI-style domains.  
 - readout_schema_p3ht.py, prior_gp_p3ht.py: P3HT-specific variants.  
