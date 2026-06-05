@@ -205,10 +205,30 @@ class GPWithPriorMean(Model):
         base_post = self.base_gp.posterior(X, observation_noise=observation_noise, **kwargs)
         mvn = base_post.mvn
         m0 = self.prior.m0_torch(X).reshape(mvn.mean.shape)
-        new_mvn = MultivariateNormal(
-            mean=mvn.mean + self.m0_scale * m0,
-            covariance_matrix=mvn.covariance_matrix,
-        )
+        mean = mvn.mean + self.m0_scale * m0
+        cov = torch.nan_to_num(mvn.covariance_matrix, nan=0.0, posinf=1e6, neginf=0.0)
+        cov = 0.5 * (cov + cov.transpose(-1, -2))
+        eye = torch.eye(cov.size(-1), device=cov.device, dtype=cov.dtype)
+        while eye.ndim < cov.ndim:
+            eye = eye.unsqueeze(0)
+
+        diag = cov.diagonal(dim1=-2, dim2=-1)
+        diag_mean = float(diag.mean().detach().clamp_min(1e-12).cpu().item())
+        diag_min = float(diag.min().detach().cpu().item())
+        base_jitter = max(1e-8, 1e-6 * diag_mean)
+        if diag_min <= 0.0:
+            base_jitter = max(base_jitter, -diag_min + 1e-7)
+
+        last_error: Optional[Exception] = None
+        for multiplier in (0.0, 1.0, 10.0, 100.0, 1000.0, 10000.0):
+            try:
+                cov_try = cov if multiplier == 0.0 else cov + (base_jitter * multiplier) * eye
+                new_mvn = MultivariateNormal(mean=mean, covariance_matrix=cov_try)
+                break
+            except Exception as exc:
+                last_error = exc
+        else:
+            raise RuntimeError("Could not construct a positive-definite prior GP posterior.") from last_error
         return GPyTorchPosterior(new_mvn)
 
     def condition_on_observations(self, X: Tensor, Y: Tensor, noise: Optional[Tensor] = None, **kwargs):

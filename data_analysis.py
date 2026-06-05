@@ -53,6 +53,7 @@ UGI_FEATURE_ORDER = [
     "isocyanide_mM",
     "ptsa",
 ]
+UGI_MERGED_CSV = "ugi_merged_dataset.csv"
 
 
 def _require_matplotlib() -> None:
@@ -73,6 +74,23 @@ def load_ugi_series(path_pattern: str = UGI_PATH_PATTERN, count: int = UGI_FILE_
     return pd.concat(data_frames, ignore_index=True)
 
 
+def load_public_ugi_merged(path: str | Path = UGI_MERGED_CSV) -> pd.DataFrame:
+    """Load the compact public UGI CSV included with this repository."""
+    csv_path = Path(path)
+    if not csv_path.exists():
+        raise FileNotFoundError(
+            f"Could not find {csv_path}. The public release includes {UGI_MERGED_CSV}; "
+            "place it in the repository root or provide the original ugi_raw/ files."
+        )
+    df = pd.read_csv(csv_path)
+    missing = [col for col in ["yield", *UGI_FEATURE_ORDER] if col not in df.columns]
+    if missing:
+        raise ValueError("Merged UGI CSV is missing expected columns: " + ", ".join(missing))
+    desired_order = ["yield", *UGI_FEATURE_ORDER]
+    remaining_cols = [c for c in df.columns.tolist() if c not in desired_order]
+    return df[[*desired_order, *remaining_cols]].copy()
+
+
 def merge_ugi_raw_datasets(
     path_pattern: str = UGI_PATH_PATTERN,
     *,
@@ -80,6 +98,9 @@ def merge_ugi_raw_datasets(
     drop_columns: Optional[Iterable[str]] = UGI_OPTIONAL_DROPS,
     column_renames: Optional[Dict[str, str]] = UGI_COLUMN_RENAMES,
 ) -> pd.DataFrame:
+    if path_pattern == UGI_PATH_PATTERN and not Path(path_pattern.format(0)).exists() and Path(UGI_MERGED_CSV).exists():
+        return load_public_ugi_merged(UGI_MERGED_CSV)
+
     df = load_ugi_series(path_pattern=path_pattern, count=count)
     if drop_columns:
         df = df.drop(columns=list(drop_columns), errors="ignore")

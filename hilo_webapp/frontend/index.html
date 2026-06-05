@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HILO UGI Console</title>
+    <script>
+      // Apply saved theme before first paint to avoid a flash.
+      // ?theme=light|dark forces (and persists) a theme.
+      try {
+        var q = new URLSearchParams(location.search).get("theme");
+        if (q === "light" || q === "dark") localStorage.setItem("hilo-theme", q);
+        document.documentElement.dataset.theme = localStorage.getItem("hilo-theme") || "dark";
+      } catch (e) {
+        document.documentElement.dataset.theme = "dark";
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
